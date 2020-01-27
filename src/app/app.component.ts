@@ -6,88 +6,108 @@ import {Component} from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  words: { value: string }[];
   multipleWords: string;
+  forceLetters: string;
+
+  letters: string[];
+  words: string[];
+  bestTree: Tree;
+
+  qnt = 0;
 
   constructor() {
     this.words = [];
     this.multipleWords = '';
   }
 
-  addWord() {
-    this.words.push({value: ''});
-  }
+  private bruteForce(anagram: string[], visited: any) {
+    console.log(++this.qnt, anagram);
+    const currTree = new Tree(anagram, this.words);
 
-  getWordsWithoutLetter(letter: string, words: string[]): string[] {
-    const res = [];
+    if (!this.bestTree || currTree.getScore() >= this.bestTree.getScore()) {
+      this.bestTree = currTree;
+    }
 
-    for (const word of words) {
-      if (word.indexOf(letter) === -1) {
-        res.push(word);
+    for (const letter of this.letters) {
+      if (!visited[letter]) {
+        visited[letter] = true;
+        this.bruteForce(anagram.concat([letter]), visited);
+        visited[letter] = false;
       }
-    }
-
-    return res;
-  }
-
-  private bruteForce(tree: Tree, letters: string[], index: number) {
-    if (index === letters.length || tree.wordsRemaining.length === 1) {
-      return tree;
-    }
-
-    const letter = letters[index];
-    const wordsWithoutNewLetter = this.getWordsWithoutLetter(letter, tree.wordsRemaining);
-    console.log(letter);
-
-    if (wordsWithoutNewLetter.length > 0) {
-      const newTree = new Tree(tree.wordsRemaining.slice(0));
-      newTree.anagram = tree.anagram.slice(0);
-      newTree.anagram.push({letter, words: wordsWithoutNewLetter});
-      newTree.removeWords(wordsWithoutNewLetter);
-
-      console.log(tree.score(), tree.wordsRemaining, tree.anagram);
-      console.log(newTree.score(), newTree.wordsRemaining, newTree.anagram);
-
-      return newTree.score() >= tree.score() ? this.bruteForce(newTree, letters, index + 1)
-        : this.bruteForce(tree, letters, index + 1);
-    } else {
-      return this.bruteForce(tree, letters, index + 1);
     }
   }
 
   submit() {
-    const words = this.multipleWords.split('\n');
+    this.qnt = 0;
+    this.words = this.multipleWords.split('\n');
 
-    const allLetters = [];
-    for (const word of words) {
-      for (const letter of word) {
-        if (allLetters.indexOf(letter) === -1) {
-          allLetters.push(letter);
+    this.letters = [];
+
+    if (!this.forceLetters) {
+      // get all letters once
+      for (const word of this.words) {
+        for (const letter of word) {
+          if (this.letters.indexOf(letter) === -1) {
+            this.letters.push(letter);
+          }
         }
       }
+
+      // only keep letters that do not appear in at least 1 word
+      for (let i = 0; i < this.letters.length; i++) {
+        let appeared = true;
+        for (const word of this.words) {
+          if (word.indexOf(this.letters[i]) === -1) {
+            appeared = false;
+          }
+        }
+
+        if (appeared) {
+          this.letters.splice(i, 1);
+          i--;
+        }
+      }
+    } else {
+      this.letters = this.forceLetters.split('\n');
     }
 
-    console.log('words:', words, 'letters', allLetters);
-    console.log(this.bruteForce(new Tree(words), allLetters, 0));
+    console.log('words:', this.words, 'letters', this.letters);
+    this.bruteForce([], {});
+    console.log(this.bestTree);
   }
 }
 
 class Tree {
   public wordsRemaining: string[];
   public anagram: { letter: string, words: string[] }[];
+  private score: number;
 
-  constructor(wordsRemaining) {
-    this.wordsRemaining = wordsRemaining;
+  constructor(anagram: string[], words: string[]) {
     this.anagram = [];
+    this.wordsRemaining = words.slice(0);
+
+    for (const letter of anagram) {
+      const wordsWithoutLetter = this.getRemainingWordsWithoutLetter(letter);
+
+      if (wordsWithoutLetter.length > 0) {
+        this.anagram.push({letter, words: wordsWithoutLetter});
+        this.removeWords(wordsWithoutLetter);
+      }
+    }
   }
 
-  score() {
-    let score = 0;
-    for (const node of this.anagram) {
-      score += node.words.length;
+  getScore() {
+    if (this.score !== undefined) {
+      return this.score;
     }
 
-    return (this.anagram.length === 0 ? -9999 : (score / this.anagram.length)) - this.wordsRemaining.length;
+    let score = 0;
+    for (const node of this.anagram) {
+      score += node.words.length === 2 ? 1 : 0;
+    }
+
+    this.score = (this.anagram.length === 0 ? -9999 : (score));
+    return this.score;
   }
 
   removeWords(wordsToRemove: string[]) {
@@ -97,5 +117,17 @@ class Tree {
         this.wordsRemaining.splice(indexOfWord, 1);
       }
     }
+  }
+
+  getRemainingWordsWithoutLetter(letter: string): string[] {
+    const res = [];
+
+    for (const word of this.wordsRemaining) {
+      if (word.indexOf(letter) === -1) {
+        res.push(word);
+      }
+    }
+
+    return res;
   }
 }

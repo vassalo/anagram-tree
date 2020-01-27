@@ -1,11 +1,7 @@
 <div class="form">
-<!--  <div *ngFor="let word of words">-->
-<!--    <input name="word" [(ngModel)]="word.value"/>-->
-<!--  </div>-->
-
   <textarea name="multipleWords" [(ngModel)]="multipleWords"></textarea>
 
-<!--  <button (click)="addWord()">Add Word</button>-->
+  <textarea name="letters" [(ngModel)]="forceLetters"></textarea>
 </div>
 
 <button (click)="submit()">Generate Tree!</button>
