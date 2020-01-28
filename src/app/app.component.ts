@@ -21,8 +21,8 @@ export class AppComponent {
   }
 
   private bruteForce(anagram: string[], visited: any) {
-    console.log(++this.qnt, anagram);
     const currTree = new Tree(anagram, this.words);
+    console.log(++this.qnt, anagram, currTree);
 
     if (!this.bestTree || currTree.getScore() >= this.bestTree.getScore()) {
       this.bestTree = currTree;
@@ -43,6 +43,7 @@ export class AppComponent {
 
     this.letters = [];
 
+    console.log(this.forceLetters);
     if (!this.forceLetters) {
       // get all letters once
       for (const word of this.words) {
@@ -102,11 +103,14 @@ class Tree {
     }
 
     let score = 0;
+    let index = 0;
     for (const node of this.anagram) {
-      score += node.words.length === 2 ? 1 : 0;
+      score += node.words.length === 2 || (index === 0 && node.words.length === 3) ? 1 : -node.words.length;
+      index++;
     }
 
-    this.score = (this.anagram.length === 0 ? -9999 : (score));
+    this.score = (this.anagram.length === 0 ? -9999
+      : score - (this.wordsRemaining.length === 1 ? -1 : this.wordsRemaining.length * 2));
     return this.score;
   }
 
