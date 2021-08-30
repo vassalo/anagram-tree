@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -20,26 +20,25 @@ export class AppComponent {
     this.multipleWords = '';
   }
 
-  private bruteForce(anagram: string[], visited: any) {
+  private bruteForce(anagram: string[], letterIdx: number) {
+    if (letterIdx >= this.letters.length) {
+      return;
+    }
+
     const currTree = new Tree(anagram, this.words);
-    console.log(++this.qnt, anagram, currTree);
 
     if (!this.bestTree || currTree.getScore() >= this.bestTree.getScore()) {
       this.bestTree = currTree;
     }
 
-    for (const letter of this.letters) {
-      if (!visited[letter]) {
-        visited[letter] = true;
-        this.bruteForce(anagram.concat([letter]), visited);
-        visited[letter] = false;
-      }
-    }
+    const letter = this.letters[letterIdx];
+    this.bruteForce([...anagram], letterIdx + 1);
+    this.bruteForce(anagram.concat([letter]), letterIdx + 1);
   }
 
   submit() {
     this.qnt = 0;
-    this.words = this.multipleWords.split('\n');
+    this.words = this.multipleWords.split('\n').map(word => word.toLowerCase());
 
     this.letters = [];
 
@@ -72,9 +71,9 @@ export class AppComponent {
       this.letters = this.forceLetters.split('\n');
     }
 
-    console.log('words:', this.words, 'letters', this.letters);
-    this.bruteForce([], {});
-    console.log(this.bestTree);
+    console.log('<<< words:', this.words, 'letters', this.letters);
+    this.bruteForce([], 0);
+    console.log('>>>', this.bestTree);
   }
 }
 
@@ -91,7 +90,7 @@ class Tree {
       const wordsWithoutLetter = this.getRemainingWordsWithoutLetter(letter);
 
       if (wordsWithoutLetter.length > 0) {
-        this.anagram.push({letter, words: wordsWithoutLetter});
+        this.anagram.push({ letter, words: wordsWithoutLetter });
         this.removeWords(wordsWithoutLetter);
       }
     }
@@ -105,7 +104,7 @@ class Tree {
     let score = 0;
     let index = 0;
     for (const node of this.anagram) {
-      score += node.words.length === 2 || (index === 0 && node.words.length === 3) ? 1 : -node.words.length;
+      score += (node.words.length === 2 || (index === 0 && node.words.length === 3)) ? 1 : -node.words.length;
       index++;
     }
 
