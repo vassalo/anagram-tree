@@ -2,4 +2,9 @@ div.form {
   max-width: 500px;
   display: flex;
   flex-direction: column;
+
+  textarea {
+    display: block;
+    margin-bottom: 32px;
+  }
 }

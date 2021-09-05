@@ -1,7 +1,18 @@
 <div class="form">
-  <textarea name="multipleWords" rows="12" [(ngModel)]="multipleWords"></textarea>
+  <label>
+    Words
+    <textarea name="multipleWords" rows="12" [(ngModel)]="multipleWords"></textarea>
+  </label>
 
-  <textarea name="letters" [(ngModel)]="forceLetters"></textarea>
+  <label>
+    Force letters
+    <textarea name="letters" [(ngModel)]="forceLetters"></textarea>
+  </label>
+
+  <label>
+    Exclude letters
+    <textarea name="exclude-letters" [(ngModel)]="excludeLetters"></textarea>
+  </label>
 </div>
 
 <button (click)="submit()">Generate Tree!</button>

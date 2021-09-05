@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 export class AppComponent {
   multipleWords: string;
   forceLetters: string;
+  excludeLetters: string;
 
   letters: string[];
   words: string[];
@@ -37,17 +38,21 @@ export class AppComponent {
   }
 
   submit() {
+    delete this.bestTree;
     this.qnt = 0;
     this.words = this.multipleWords.split('\n').map(word => word.toLowerCase());
 
     this.letters = [];
 
-    console.log(this.forceLetters);
     if (!this.forceLetters) {
       // get all letters once
       for (const word of this.words) {
         for (const letter of word) {
           if (this.letters.indexOf(letter) === -1) {
+            if (this.excludeLetters && this.excludeLetters.includes(letter)) {
+              continue;
+            }
+
             this.letters.push(letter);
           }
         }
@@ -68,7 +73,7 @@ export class AppComponent {
         }
       }
     } else {
-      this.letters = this.forceLetters.split('\n');
+      this.letters = this.forceLetters.split('');
     }
 
     console.log('<<< words:', this.words, 'letters', this.letters);
@@ -104,7 +109,8 @@ class Tree {
     let score = 0;
     let index = 0;
     for (const node of this.anagram) {
-      score += (node.words.length === 2 || (index === 0 && node.words.length === 3)) ? 1 : -node.words.length;
+      score += node.words.length === 2 ? 1 : -node.words.length;
+      // score += (node.words.length === 2 || (index === 0 && node.words.length === 3)) ? 1 : -node.words.length;
       index++;
     }
 
